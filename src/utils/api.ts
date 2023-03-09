@@ -136,7 +136,7 @@ const addItem = async (data) => {
 }
 
 const updateItem = async (data) => {
-	const [notes, date, id, practiceTimes] = data
+	const [notes, date, id, practiceTimes, masterLevel] = data
 	console.log("para info", data)
 
 	const options = {
@@ -165,6 +165,11 @@ const updateItem = async (data) => {
 				},
 				"Practice Times": {
 					number: practiceTimes + 1,
+				},
+				"Master Level":{
+					select:{
+						name: masterLevel,
+					}
 				}
 			},
 		},

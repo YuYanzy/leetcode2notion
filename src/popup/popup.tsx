@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import ReactDOM from "react-dom"
-import { Box, Grid, InputBase, IconButton, TextField } from "@material-ui/core"
+import { Box, Grid, InputBase, IconButton, TextField, Select, MenuItem } from "@material-ui/core"
 import Button from '@material-ui/core/Button';
 import { Add as AddIcon, Send as SendIcon } from "@material-ui/icons"
 import "./popup.css"
@@ -15,6 +15,7 @@ const App: React.FC<{}> = () => {
 	const [practiced, setPracticed] = useState<boolean>(false)
 	const [practiceTimes, setPracticeTimes] = useState<number>(0)
 	const [pageID, setPageID] = useState<string>("")
+	const [masterLevel, setMasterLevel] = useState<number>(0)
 
 	useEffect(() => {
 		// try to get page from database
@@ -35,6 +36,7 @@ const App: React.FC<{}> = () => {
 							setNoteInput(page.Notes.rich_text[0].plain_text)
 							setPracticeTimes(page["Practice Times"].number)
 							setPageID(pages[0].id)
+							setMasterLevel(convertMasterLevelToValue(page["Master Level"].select.name))
 						}
 					})
 				}
@@ -58,8 +60,30 @@ const App: React.FC<{}> = () => {
 		})
 	}
 
+	const convertValueToMasterLevel = (value: number) => {
+		switch (value) {
+			case 0: return "无法理解"
+			case 1: return "思路不OK"
+			case 2: return "思路OK实现Hard"
+			case 3: return "思路OK实现OK"
+			case 4: return "秒杀"
+			default: return "无法理解"
+		}
+	}
+
+	const convertMasterLevelToValue = (masterLevel: string) => {
+		switch (masterLevel) {
+			case "无法理解": return 0
+			case "思路不OK": return 1
+			case "思路OK实现Hard": return 2
+			case "思路OK实现OK": return 3
+			case "秒杀": return 4
+			default: return 0
+		}
+	}
+
 	const modifyItem = () => {
-		let data = [noteInput, getDateString(), pageID, practiceTimes]
+		let data = [noteInput, getDateString(), pageID, practiceTimes, convertValueToMasterLevel(masterLevel)]
 		chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 			chrome.tabs.sendMessage(
 				tabs[0].id,
@@ -90,6 +114,21 @@ const App: React.FC<{}> = () => {
 			<h1>{title}</h1>
 			<div>{difficulty}</div>
 			{practiced && <div>Practice Times: {practiceTimes}</div>}
+			<br />
+			{practiced && <div>
+				掌握程度：
+				<Select
+					value={masterLevel}
+					onChange={(e) => { setMasterLevel(e.target.value as number) }}
+				>
+					<MenuItem value={0}>无法理解</MenuItem>
+					<MenuItem value={1}>思路不OK</MenuItem>
+					<MenuItem value={2}>思路OK实现Hard</MenuItem>
+					<MenuItem value={3}>思路OK实现OK</MenuItem>
+					<MenuItem value={4}>秒杀</MenuItem>
+				</Select>
+
+			</div>}
 			<TextField
 				style={{ width: 270 }}
 				placeholder="Add notes ..."
@@ -97,9 +136,10 @@ const App: React.FC<{}> = () => {
 				value={noteInput}
 				onChange={(event) => setNoteInput(event.target.value)}
 			/>
+
 			<br />
-			{practiced ? <Button variant="outlined">Change</Button> :
-				<Button variant="outlined">Add</Button>}
+			{practiced ? <Button variant="outlined" onClick={handleButtonClick}>Change</Button> :
+				<Button variant="outlined" onClick={handleButtonClick}>Add</Button>}
 		</Box>
 	)
 }
