@@ -114,6 +114,7 @@ const App: React.FC<{}> = () => {
 			<h1>{title}</h1>
 			<div>{difficulty}</div>
 			{practiced && <div>Practice Times: {practiceTimes}</div>}
+			<hr />
 			<br />
 			{practiced && <div>
 				掌握程度：
@@ -138,9 +139,12 @@ const App: React.FC<{}> = () => {
 			/>
 
 			<br />
-			{practiced ? <Button variant="outlined" onClick={handleButtonClick}>Change</Button> :
-				<Button variant="outlined" onClick={handleButtonClick}>Add</Button>}
-		</Box>
+			<Button variant="outlined" onClick={() => window.close()}> Close </Button>
+			{
+				practiced ? <Button variant="outlined" onClick={handleButtonClick}>Modify</Button> :
+					<Button variant="outlined" onClick={handleButtonClick}>Add</Button>
+			}
+		</Box >
 	)
 }
 
