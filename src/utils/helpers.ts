@@ -1,4 +1,4 @@
-const getDateString = () => {
+export const getDateString = () => {
 	let d = new Date(),
 		month = "" + (d.getMonth() + 1),
 		day = "" + d.getDate(),
@@ -8,4 +8,5 @@ const getDateString = () => {
 	return [year, month, day].join("-")
 }
 
-export default getDateString
+
+

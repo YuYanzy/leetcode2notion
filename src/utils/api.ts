@@ -2,16 +2,20 @@ import axios from "axios"
 
 import { NOTION_KEY, NOTION_DATABASE_ID } from "../secret"
 const BASE_URL = "https://api.notion.com/v1"
+const Notion_Version = "2022-06-28"
+
+const headers = {
+	Authorization: `Bearer ${NOTION_KEY}`,
+	accept: "application/json",
+	"Notion-Version": Notion_Version,
+}
+
 
 const getDatabase = async () => {
 	const options = {
 		method: "GET",
 		url: `${BASE_URL}/databases/${NOTION_DATABASE_ID}`,
-		headers: {
-			Authorization: `Bearer ${NOTION_KEY}`,
-			accept: "application/json",
-			"Notion-Version": "2022-06-28",
-		},
+		headers: headers,
 	}
 
 	axios
@@ -31,9 +35,7 @@ const getPages = async (problemTitle) => {
 		method: "post",
 		url: `${BASE_URL}/databases/${NOTION_DATABASE_ID}/query`,
 		headers: {
-			Authorization: `Bearer ${NOTION_KEY}`,
-			accept: "application/json",
-			"Notion-Version": "2022-06-28",
+			...headers,
 			"content-type": "application/json",
 		},
 		data: {
@@ -47,7 +49,7 @@ const getPages = async (problemTitle) => {
 		},
 	}
 
-	axios
+	const pages = await axios
 		.request(options)
 		.then(function (response) {
 			const rows = response.data.results
@@ -55,15 +57,17 @@ const getPages = async (problemTitle) => {
 			console.log(rows.length)
 			for (let i = 0; i < rows.length; i++) {
 				console.log(rows[i])
-				console.log(rows[i].id)
-				console.log(rows[i].properties.Date.date.start)
-				console.log(rows[i].properties.Notes.rich_text[0].plain_text)
-				console.log(rows[i].properties.Name.title[0].plain_text)
+				// console.log(rows[i].id)
+				// console.log(rows[i].properties.Date.date.start)
+				// console.log(rows[i].properties.Notes.rich_text[0].plain_text)
+				// console.log(rows[i].properties.Name.title[0].plain_text)
 			}
+			return rows
 		})
 		.catch(function (error) {
 			console.error(error)
 		})
+	return pages;
 }
 
 const addItem = async (data) => {
@@ -74,9 +78,7 @@ const addItem = async (data) => {
 		method: "POST",
 		url: "https://api.notion.com/v1/pages",
 		headers: {
-			Authorization: `Bearer ${NOTION_KEY}`,
-			accept: "application/json",
-			"Notion-Version": "2022-06-28",
+			...headers,
 			"content-type": "application/json",
 		},
 		data: {
@@ -114,6 +116,9 @@ const addItem = async (data) => {
 						start: date,
 					},
 				},
+				"Practice Times": {
+					number: 1,
+				}
 			},
 		},
 	}
@@ -126,7 +131,56 @@ const addItem = async (data) => {
 		})
 		.catch(function (error) {
 			console.error(error)
-			alert("error")
+			alert(error)
 		})
 }
-export { getDatabase, getPages, addItem }
+
+const updateItem = async (data) => {
+	const [notes, date, id, practiceTimes] = data
+	console.log("para info", data)
+
+	const options = {
+		method: "PATCH",
+		url: `https://api.notion.com/v1/pages/${id}`,
+		headers: {
+			...headers,
+			"content-type": "application/json",
+		},
+		data: {
+			properties: {
+				Notes: {
+					rich_text: [
+						{
+							type: "text",
+							text: {
+								content: notes,
+							},
+						},
+					],
+				},
+				Date: {
+					date: {
+						start: date,
+					},
+				},
+				"Practice Times": {
+					number: practiceTimes + 1,
+				}
+			},
+		},
+	}
+
+	axios
+		.request(options)
+		.then(function (response) {
+			console.log(response.data)
+			window.close()
+		})
+		.catch(function (error) {
+			console.error(error)
+			alert(error)
+		})
+
+}
+
+export { getDatabase, getPages, addItem, updateItem }
